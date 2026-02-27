@@ -1,4 +1,12 @@
-require("dotenv").config();
+const TelegramBot = require('node-telegram-bot-api');
+const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
+
+// Example product list
+const products = [
+  { name: "Item A", price: 0.01 },
+  { name: "Item B", price: 0.02 },
+  { name: "Item C", price: 0.03 }
+];require("dotenv").config();
 const { ethers } = require("ethers");
 const axios = require("axios");
 const express = require("express");
