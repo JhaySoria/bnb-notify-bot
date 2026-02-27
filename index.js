@@ -52,3 +52,15 @@ bot.onText(/\/start/, (msg) => {
     }
   });
 });
+bot.on('callback_query', (callbackQuery) => {
+  const message = callbackQuery.message;
+  const productName = callbackQuery.data;
+
+  const product = products.find(p => p.name === productName);
+
+  if (product) {
+    bot.sendMessage(message.chat.id, 
+      `Please send **${product.price} BNB** to this wallet:\n${process.env.WALLET_ADDRESS}\n\nAfter sending, your purchase will be confirmed automatically.`
+    );
+  }
+});
