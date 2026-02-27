@@ -41,3 +41,14 @@ async function checkBalance() {
 }
 
 setInterval(checkBalance, 15000);
+bot.onText(/\/start/, (msg) => {
+  const chatId = msg.chat.id;
+
+  const buttons = products.map(p => [{ text: `${p.name} - ${p.price} BNB`, callback_data: p.name }]);
+
+  bot.sendMessage(chatId, "Welcome! Choose a product:", {
+    reply_markup: {
+      inline_keyboard: buttons
+    }
+  });
+});
