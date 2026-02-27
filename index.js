@@ -1,25 +1,33 @@
-const TelegramBot = require('node-telegram-bot-api');
-const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
+// 1️⃣ Load environment variables first
+require("dotenv").config();
 
-// Example product list
-const products = [
-  { name: "Item A", price: 0.01 },
-  { name: "Item B", price: 0.02 },
-  { name: "Item C", price: 0.03 }
-];require("dotenv").config();
+const TelegramBot = require('node-telegram-bot-api');
 const { ethers } = require("ethers");
 const axios = require("axios");
 const express = require("express");
 
+// 2️⃣ Initialize Telegram bot
+const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
+
+// 3️⃣ Product list
+const products = [
+  { name: "Item A", price: 0.01 },
+  { name: "Item B", price: 0.02 },
+  { name: "Item C", price: 0.03 }
+];
+
+// 4️⃣ Express web server (keep bot alive)
 const app = express();
 app.get("/", (req, res) => res.send("Bot is running"));
 app.listen(3000, () => console.log("Web server running"));
 
+// 5️⃣ Binance Smart Chain provider
 const provider = new ethers.JsonRpcProvider("https://bsc-dataseed.binance.org/");
 const walletAddress = process.env.WALLET_ADDRESS;
 
 let lastBalance = null;
 
+// 6️⃣ Check BNB balance every 15 seconds
 async function checkBalance() {
   try {
     const balance = await provider.getBalance(walletAddress);
@@ -39,8 +47,9 @@ async function checkBalance() {
     console.log(error.message);
   }
 }
-
 setInterval(checkBalance, 15000);
+
+// 7️⃣ Step 3 — /start menu
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
 
@@ -52,6 +61,8 @@ bot.onText(/\/start/, (msg) => {
     }
   });
 });
+
+// 8️⃣ Step 4 — Send payment instructions when button clicked
 bot.on('callback_query', (callbackQuery) => {
   const message = callbackQuery.message;
   const productName = callbackQuery.data;
@@ -59,7 +70,8 @@ bot.on('callback_query', (callbackQuery) => {
   const product = products.find(p => p.name === productName);
 
   if (product) {
-    bot.sendMessage(message.chat.id, 
+    bot.sendMessage(
+      message.chat.id,
       `Please send **${product.price} BNB** to this wallet:\n${process.env.WALLET_ADDRESS}\n\nAfter sending, your purchase will be confirmed automatically.`
     );
   }
