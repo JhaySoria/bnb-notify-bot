@@ -1,4 +1,35 @@
-bnb-notify-bot/
-├─ index.js        # main bot code
-├─ package.json    # Node.js dependencies
-├─ .env.example    # example env variables
+require("dotenv").config();
+const { ethers } = require("ethers");
+const axios = require("axios");
+const express = require("express");
+
+const app = express();
+app.get("/", (req, res) => res.send("Bot is running"));
+app.listen(3000, () => console.log("Web server running"));
+
+const provider = new ethers.JsonRpcProvider("https://bsc-dataseed.binance.org/");
+const walletAddress = process.env.WALLET_ADDRESS;
+
+let lastBalance = null;
+
+async function checkBalance() {
+  try {
+    const balance = await provider.getBalance(walletAddress);
+    const balanceInBNB = parseFloat(ethers.formatEther(balance));
+
+    if (lastBalance !== null && balanceInBNB > lastBalance) {
+      const received = balanceInBNB - lastBalance;
+
+      await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
+        chat_id: process.env.CHAT_ID,
+        text: `🚀 New BNB Deposit!\n\nAmount: ${received} BNB\nWallet: ${walletAddress}`
+      });
+    }
+
+    lastBalance = balanceInBNB;
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+
+setInterval(checkBalance, 15000);
